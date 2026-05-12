@@ -137,8 +137,8 @@ EOF
     local FLAG_P2="master_"
     local FLAG_P3="verified}"
 
-    echo "Jan 15 08:14:22 shinobee $MARKER[$PID]: PART_1=$FLAG_P1" >> /var/log/auth.log
-    echo "Jan 15 09:30:15 shinobee $MARKER[$PID]: PART_2=$FLAG_P2" >> /var/log/syslog
+    echo "Jan 15 08:14:22 shinobee $MARKER[$PID]: PART_1=$FLAG_P1" >> /var/log/kern.log
+    echo "Jan 15 09:30:15 shinobee $MARKER[$PID]: PART_2=$FLAG_P2" >> /var/log/kern.log
     echo "Jan 15 10:45:08 shinobee $MARKER[$PID]: PART_3=$FLAG_P3" >> /var/log/kern.log
 
     # Decoys
