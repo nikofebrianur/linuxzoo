@@ -68,8 +68,8 @@ test_day_17() {
     log_header "Testing Day 17: Log Analysis"
     local p1 p2 p3 flag
     
-    p1=$(run_as "$USER_STD" "grep 'PART_1=' /var/log/auth.log 2>/dev/null" | grep -oE 'BEE\{[^_]+')
-    p2=$(run_as "$USER_STD" "grep 'PART_2=' /var/log/syslog 2>/dev/null" | grep -oE '[^=]+$' | tr -d ' ')
+    p1=$(run_as "$USER_STD" "grep 'PART_1=' /var/log/kern.log 2>/dev/null" | grep -oE 'BEE\{[^_]+')
+    p2=$(run_as "$USER_STD" "grep 'PART_2=' /var/log/kern.log 2>/dev/null" | grep -oE '[^=]+$' | tr -d ' ')
     p3=$(run_as "$USER_STD" "grep 'PART_3=' /var/log/kern.log 2>/dev/null" | grep -oE '[^=]+$' | tr -d ' ')
     
     # Simple concat check
