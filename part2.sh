@@ -560,9 +560,11 @@ setup_day_27() {
     local AUDIT_LOG="/var/log/linuxzoo/day27_audit.log"
     local FLAG="BEE{storage_cleanup_verified}"
 
+    # 1. Bersihkan & Siapkan Direktori Latihan (Idempotent)
     rm -rf "$BASE_DIR/day27" 2>/dev/null || true
     mkdir -p "$PRACTICE_DIR/archive"
 
+    # Buat file dummy untuk latihan cleanup
     dd if=/dev/urandom of="$PRACTICE_DIR/large_data.bin" bs=1M count=2 2>/dev/null
     echo "Current active log entry" > "$PRACTICE_DIR/current.log"
     cat > "$PRACTICE_DIR/archive/old_syslog.1" << 'EOF'
@@ -571,7 +573,11 @@ Apr 19 10:01:00 shinobee systemd[1]: Started Daily Cleanup.
 EOF
     touch -d "10 days ago" "$PRACTICE_DIR/archive/old_syslog.1"
 
+    # 2. Setup Direktori Log Sistem (FIX: Buka permission directory)
     mkdir -p /var/log/linuxzoo
+    chmod 755 /var/log/linuxzoo  # PENTING: User butuh 'x' untuk traverse directory
+
+    # 3. Tanam Flag di File Audit Sistem
     cat > "$AUDIT_LOG" << EOF
 === LinuxZoo Day 27: Storage Audit Log ===
 Timestamp: $(date -Iseconds)
@@ -579,22 +585,29 @@ Auditor: automated-setup
 Purpose: Verify storage management exercise completion
 Storage Cleanup Verification: $FLAG
 EOF
-    chmod 644 "$AUDIT_LOG"
-    chown root:adm "$AUDIT_LOG"
 
+    # FIX: Gunakan root:root + 644 agar pasti readable oleh user manapun
+    # Tanpa bergantung pada cache grup 'adm' yang mungkin belum aktif
+    chmod 644 "$AUDIT_LOG"
+    chown root:root "$AUDIT_LOG"
+
+    # 4. Buat Clue
     cat > "$BASE_DIR/day27/clue.md" << 'EOF'
 # Day 27: Gudang Pingu
 Pingu tidak membiarkan gudang berantakan. Ia pilah mana yang lama, mana yang masih aktif.
-1. Gunakan `find` untuk cari file di ~/linuxzoo/day27/practice yang lebih tua dari 7 hari.
-2. Lakukan cleanup sebagai latihan.
-3. Setelah selesai, periksa log audit sistem di /var/log/linuxzoo/ untuk verifikasi.
-4. Flag tersimpan di file audit tersebut.
 EOF
 
+    # 5. Set Ownership Direktori Latihan
     chown -R "$USER:$USER" "$BASE_DIR"
 
-    if [ -f "$AUDIT_LOG" ] && grep -q "$FLAG" "$AUDIT_LOG"; then
-        echo "[✅] Day 27 Selesai."
+    # 6. Verifikasi Otomatis
+    if [ -f "$AUDIT_LOG" ] && grep -q "$FLAG" "$AUDIT_LOG" 2>/dev/null; then
+        # Cek tambahan: pastikan user pingu benar-benar bisa membaca file tersebut
+        if su - "$USER" -c "test -r $AUDIT_LOG" &>/dev/null; then
+            echo "[✅] Day 27 Selesai."
+        else
+            echo "[⚠️] Day 27: Flag tertanam, tapi user '$USER' mungkin belum bisa membaca (cek grup/permission)."
+        fi
     else
         echo "[❌] Day 27 Gagal."
     fi
